@@ -3,14 +3,6 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const { Server } = require("socket.io") ;
-// CORS stuff
-// app.use(function(req, res, next) {
-//   res.setHeader('Access-Control-Allow-Origin', '*');
-//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-//   res.setHeader('Access-Control-Allow-Credentials', true);
-//   next();
-// });
 
 const io = new Server(http, {
   cors: {
@@ -22,6 +14,8 @@ const io = new Server(http, {
 let dice1 = 1;
 let dice2 = 1;
 let deadHorses = [];
+let players = {};
+
 
 let gameView = {
   2: 0,
@@ -64,6 +58,11 @@ let moneyView = {
   11: 0,
   12: 0
 }
+
+function addPlayer(playerName) {
+  players[playerName] = [];
+}
+
 function advanceGame(dice1, dice2) {
   let horseRolled = dice1 + dice2
   if(!deadHorses.includes(horseRolled)){
@@ -183,6 +182,13 @@ io.on("connection", (socket) => {
   socket.on("getMoneyView", () => {
     io.sockets.in("game").emit('moneyViewResult', moneyView);
   });
+
+  socket.on("addPlayer", (arg) => {
+    addPlayer(arg);
+    console.log(arg);
+    console.log(players);
+    io.sockets.in("game").emit('addPlayerResult', players);
+  })
 
 });
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Button } from "react-bootstrap";
+import { Button, InputGroup, Form } from "react-bootstrap";
 import BoardColumn from "../Components/boardColumn";
 import io from 'socket.io-client';
 import MoneyTable from "../Components/moneyTable";
@@ -12,6 +12,8 @@ export default function Board(){
   let [dice2, setDice2] = useState(1);
   let [deadHorses, setDeadHorses] = useState([]);
   let [moneyView, setMoneyView] = useState([]);
+  let [players, setPlayers] = useState({});
+  let [newPlayer, setNewPlayer] = useState("");
 
   // eslint-disable-next-line no-unused-vars
   let [goalScore, setGoalScore] = useState({});
@@ -29,6 +31,7 @@ export default function Board(){
     socket.on('resetGameResult', (arg) => resetGame(arg));
     socket.on('gameViewResult', (arg) => getGameView(arg));
     socket.on('moneyViewResult', (arg) => getMoneyView(arg));
+    socket.on('addPlayerResult', (arg) => addPlayer(arg));
   }, [dice1, dice2]);
 
   function getGameView(arg){
@@ -63,6 +66,10 @@ export default function Board(){
     setCurrentGame(arg.gameView);
   }
 
+  function addPlayer(arg){
+    setPlayers(newPlayer);
+  }
+
   let boardView = Object.keys(goalScore).map((horse) => {
 
     return(
@@ -95,6 +102,10 @@ export default function Board(){
     socket.emit("getMoneyView");
   }
 
+  function handleAddPlayer(){
+    socket.emit("addPlayer", newPlayer);
+  }
+
   return(
     <div>
       <h1 className="text-secondary">Welcome to the board. {test}</h1>
@@ -103,10 +114,17 @@ export default function Board(){
       <h3>{dice2}</h3>
       <h3>{deadHorses}</h3>
 
-      <Button onClick={() => handleGetGameView()}>Get Game View</Button>
+      <Button onClick={() => handleGetGameView()}>Get Game View Test for Autocommit</Button>
       <Button onClick={() => handleKillHorse()}>Kill Horse</Button>
       <Button onClick={() => handleResetGame()}>Reset Game</Button>
       <Button onClick={() => handleGetMoneyView()}>Get Money View</Button>
+      <Button onClick={() => {handleAddPlayer("shane")}}>Add Player</Button>
+      <InputGroup className="mb-3 w-25 border mt-2">
+          <Button variant="outline-secondary" onClick={() => handleAddPlayer()}>
+            Add Player
+          </Button>
+          <Form.Control  onChange={(e) => setNewPlayer(e.target.value)}/>
+      </InputGroup>
       <div className="d-flex">
         {boardView}
       </div>
