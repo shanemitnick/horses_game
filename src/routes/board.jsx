@@ -3,6 +3,7 @@ import { Button, InputGroup, Form } from "react-bootstrap";
 import BoardColumn from "../Components/boardColumn";
 import io from 'socket.io-client';
 import MoneyTable from "../Components/moneyTable";
+import GameOverModal from "../Components/gameoverModal";
 const socket = io.connect('http://127.0.0.1:5004')
 
 export default function Board(){
@@ -14,7 +15,9 @@ export default function Board(){
   let [moneyView, setMoneyView] = useState([]);
   let [players, setPlayers] = useState({});
   let [newPlayer, setNewPlayer] = useState("");
-
+  let [gameOver, setGameOver] = useState(false);
+  let [winningHorse, setWinningHorse ] = useState();
+  let [winningPlayers, setWinningPlayers] = useState([]);
   // eslint-disable-next-line no-unused-vars
   let [goalScore, setGoalScore] = useState({});
   // eslint-disable-next-line no-unused-vars
@@ -32,6 +35,7 @@ export default function Board(){
     socket.on('gameViewResult', (arg) => getGameView(arg));
     socket.on('moneyViewResult', (arg) => getMoneyView(arg));
     socket.on('addPlayerResult', (arg) => addPlayer(arg));
+    socket.on('dealCardsResult', (arg) => dealCards(arg))
   }, [dice1, dice2]);
 
   function getGameView(arg){
@@ -43,12 +47,19 @@ export default function Board(){
   }
 
   function rollDice(arg){
-    console.log(arg);
+    // console.log(arg);
     setDice1(arg.dice1);
     setDice2(arg.dice2);
     setGoalScore(arg.goalScore);
     setCurrentGame(arg.game);
     setMoneyView(arg.moneyView);
+    setPlayers(arg.players);
+
+    if(arg.result !== -1){
+      setGameOver(true);
+      setWinningHorse(arg.result.card);
+      setWinningPlayers(arg.result.winningPlayers);
+    }
   }
 
   function killHorse(arg){
@@ -58,16 +69,20 @@ export default function Board(){
     setMoneyView(arg.moneyView);
   }
 
+  function addPlayer(arg){
+    setPlayers(arg);
+  }
+
   function resetGame(arg){
-    console.log("REset game result", arg);
+    // console.log("Reset game result", arg);
     setDice1(1);
     setDice2(1);
     setDeadHorses(arg.deadHorses);
     setCurrentGame(arg.gameView);
   }
 
-  function addPlayer(arg){
-    setPlayers(newPlayer);
+  function dealCards(arg){
+    console.log(arg);
   }
 
   let boardView = Object.keys(goalScore).map((horse) => {
@@ -77,7 +92,8 @@ export default function Board(){
         <BoardColumn number={horse}
                       currentPos={currentGame[horse]}
                       deadPosition={currentGame[horse]}
-                      goal={goalScore[horse]} />
+                      goal={goalScore[horse]} 
+                      winningHorse={winningHorse}/>
       </div>
     )
   })
@@ -106,8 +122,20 @@ export default function Board(){
     socket.emit("addPlayer", newPlayer);
   }
 
+  function handleDealCards(){
+    socket.emit("dealCards");
+  }
+
   return(
     <div>
+      {gameOver ? 
+         <GameOverModal show={gameOver} 
+                        closeModal={() => setGameOver(false)}
+                        players={players}
+                        winningHorse={winningHorse}
+                        winningPlayers={winningPlayers}
+                        moneyView={moneyView}/>
+      : null}
       <h1 className="text-secondary">Welcome to the board. {test}</h1>
       <Button varient="dark" onClick={() =>  handleRollDice()}>Roll Dice</Button>
       <h2>{dice1}</h2>
@@ -118,7 +146,7 @@ export default function Board(){
       <Button onClick={() => handleKillHorse()}>Kill Horse</Button>
       <Button onClick={() => handleResetGame()}>Reset Game</Button>
       <Button onClick={() => handleGetMoneyView()}>Get Money View</Button>
-      <Button onClick={() => {handleAddPlayer("shane")}}>Add Player</Button>
+      <Button onClick={() => handleDealCards()}>Deal Cards</Button>
       <InputGroup className="mb-3 w-25 border mt-2">
           <Button variant="outline-secondary" onClick={() => handleAddPlayer()}>
             Add Player
@@ -133,6 +161,16 @@ export default function Board(){
       <div style={{width: "1650px"}}>
         <MoneyTable moneyView={moneyView}/>
       </div>
+
+      <div className="mt-5">
+        <PlayerHands />
+      
+      </div>
+
+
+
     </div>
+
+
   )
 }

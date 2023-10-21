@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const express = require('express');
+const { key } = require('localforage');
 const app = express();
 const http = require('http').Server(app);
 const { Server } = require("socket.io") ;
@@ -15,6 +16,7 @@ let dice1 = 1;
 let dice2 = 1;
 let deadHorses = [];
 let players = {};
+let cards = ["H2", "D2", "S2", "C2","H3", "D3", "S3", "C3", "H4", "D4", "S4", "C4","H5", "D5", "S5", "C5", "H6", "D6", "S6", "C6", "H7", "D7", "S7", "C7", "H8", "D8", "S8", "C8", "H9", "D9", "S9", "C9", "H10", "DT", "ST", "CT", "HJ", "DJ", "SJ", "CJ", "HQ", "DQ", "SQ", "Q"]
 
 
 let gameView = {
@@ -83,7 +85,25 @@ function checkGameOver(){
       return winner = key;
     }
   })
-  return{winner}
+
+  if(winner >= 0){
+    let winningPlayers = [];
+    let playerNames = Object.keys(players);
+    // loop through players cards, check if any cards contain the key
+    // if they do, add them to the winners group, return winners group.
+    playerNames.forEach((player) => {
+      console.log(player);
+      players[player].forEach((card) => {
+
+        if(!( card == undefined ) && card.includes(winner) && !winningPlayers.includes(player)){
+          winningPlayers.push(player);
+        }
+      })
+    });
+
+    return({card: winner, winningPlayers});
+  }
+  return(winner)
 }
 
 function killHorses(){
@@ -116,12 +136,44 @@ function rollDice(){
   return {dice1, dice2};
 }
 
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+function dealCards(){
+  // get number of players
+  let playerNames = Object.keys(players);
+  // randomize cards
+  let shuffledDeck = shuffle(cards.slice());
+  // deal each card in the deck evenly
+
+  while(shuffledDeck.length > 0){
+    playerNames.forEach((player) => {
+      players[player].push(shuffledDeck.pop());
+    })
+  }
+
+  return players
+}
 
 let test = 1;
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', (req, res) => {
-  console.log("someone got data");
   res.send(`${test}`);
   test++;
 })
@@ -134,7 +186,7 @@ io.on("connection", (socket) => {
   socket.on("rollDice", () => {
     let {dice1, dice2} = rollDice();
 
-    io.sockets.in('game').emit('rollDiceResult', {dice1, dice2, game: gameView, result: checkGameOver(), goalScore, moneyView});
+    io.sockets.in('game').emit('rollDiceResult', {dice1, dice2, game: gameView, result: checkGameOver(), goalScore, moneyView, players});
   });
 
   socket.on("killHorse", () => {
@@ -172,7 +224,10 @@ io.on("connection", (socket) => {
       12: 0
     }
   
-    io.sockets.in('game').emit('resetGameResult', {deadHorses, gameView, moneyView});
+    players = {
+
+    }
+    io.sockets.in('game').emit('resetGameResult', {deadHorses, gameView, moneyView, players});
   });
 
   socket.on("getGameView", () => {
@@ -185,9 +240,15 @@ io.on("connection", (socket) => {
 
   socket.on("addPlayer", (arg) => {
     addPlayer(arg);
-    console.log(arg);
-    console.log(players);
+    console.log("player added");
+
     io.sockets.in("game").emit('addPlayerResult', players);
+  });
+
+  socket.on("dealCards", () => {
+    console.log('dealing cards');
+    let newPlayers = dealCards();
+    io.sockets.in("game").emit('dealCardsResult', newPlayers)
   })
 
 });
