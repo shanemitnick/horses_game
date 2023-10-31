@@ -1,40 +1,41 @@
 /* eslint-disable react/prop-types */
 
+import { Col, Table, Row } from "react-bootstrap";
+
 export default function BoardColumn(props) {
   let columns = [];
   let deadColumns = [];
-  // for(let j = 0; j <= numberColumns; j++){
-  //   columns.push((
-  //       <div className="border border-white w-100 h-50"> 
-  //       </div>
-  //   ))
-  // }
+
+
   deadColumns = [...Array(4).keys()].map((currentRow => {
-    if(currentRow === props.deadPosition + 4){
-      return(<div key={currentRow*-1} className="text-center border bg-warning border-white w-100" style={{height: "50px"}}> DEAD </div>);
-    } else {
-      return(<div key={currentRow*-1} className="border border-white w-100" style={{height: "50px"}}>  </div>);
-    }
-  }));
+      if(currentRow === props.deadPosition + 4){
+        return(<div key={currentRow*-1} className="text-center border bg-warning border-white"  style={{width: "100px", height: "50px"}}> DEAD </div>);
+      } else {
+        return(<div key={currentRow*-1} className="border bg-dark border-white align-items-stretch" style={{width: "100px", height: "50px"}}>  </div>);
+      }
+    }));
+
+
+
   columns = [...Array(props.goal - 1).keys()].map((currentRow) => {
-    if(props.currentPos === currentRow + 1){
-      return(
-        <div key={currentRow} className="border bg-success text-center border-white w-100 h-50">  HORSE
-        </div>
-      )
-    } else {
-      return(
-       <div key={currentRow} className="border border-white w-100 h-50">  </div>
-      )
-    }
-  })
+      if(props.currentPos === currentRow + 1){
+        return(
+          <Col key={currentRow} className="border bg-success text-center border-white flex-grow" style={{height:"50px"}}>  HORSE
+          </Col>
+        )
+      } else {
+        return(
+        <Col key={currentRow} className="border bg-success border-white flex-grow align-items-stretch" style={{height:"50px"}}></Col>
+        )
+      }
+    })
 
   return(
-    <div className="d-flex flex-column bg-secondary border border-white">      
+    <Table className="d-flex flex-row border border-white">      
         {deadColumns} 
-       <div className="text-center">{props.number}</div>
-       <div id="4/10" className="bg-secondary border border-white d-flex flex-column" style={{width: "150px", height:"650px"}}>
+       <div style={{width: "60px"}} className="text-center">{props.number}</div>
+       <Row id="4/10" className="bg-secondary border border-white d-flex flex-row w-100 align-items-stretch">
         {columns}
-        </div>
-    </div>  )
+        </Row>
+    </Table>  )
 }

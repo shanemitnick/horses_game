@@ -5,6 +5,9 @@ import io from 'socket.io-client';
 import MoneyTable from "../Components/moneyTable";
 import GameOverModal from "../Components/gameoverModal";
 const socket = io.connect('http://127.0.0.1:5004')
+import PlayerHands from "../Components/PlayerHands";
+import BoardContainer from "../Components/BoardContainer";
+import Controls from "../Components/constrols";
 
 export default function Board(){
 
@@ -85,19 +88,6 @@ export default function Board(){
     console.log(arg);
   }
 
-  let boardView = Object.keys(goalScore).map((horse) => {
-
-    return(
-      <div key={horse} id={horse}>
-        <BoardColumn number={horse}
-                      currentPos={currentGame[horse]}
-                      deadPosition={currentGame[horse]}
-                      goal={goalScore[horse]} 
-                      winningHorse={winningHorse}/>
-      </div>
-    )
-  })
-
   function handleRollDice(){
     socket.emit("rollDice");
   }
@@ -138,8 +128,6 @@ export default function Board(){
       : null}
       <h1 className="text-secondary">Welcome to the board. {test}</h1>
       <Button varient="dark" onClick={() =>  handleRollDice()}>Roll Dice</Button>
-      <h2>{dice1}</h2>
-      <h3>{dice2}</h3>
       <h3>{deadHorses}</h3>
 
       <Button onClick={() => handleGetGameView()}>Get Game View Test for Autocommit</Button>
@@ -153,19 +141,22 @@ export default function Board(){
           </Button>
           <Form.Control  onChange={(e) => setNewPlayer(e.target.value)}/>
       </InputGroup>
-      <div className="d-flex">
-        {boardView}
-      </div>
-      <div className="border border-white text-center" style={{width: "1650px"}}>FINISH</div>
 
       <div style={{width: "1650px"}}>
         <MoneyTable moneyView={moneyView}/>
       </div>
 
-      <div className="mt-5">
-        <PlayerHands />
+
+      <PlayerHands  players={players}/>
       
-      </div>
+      <BoardContainer currentGame={currentGame}
+                      winningHorse={winningHorse}
+                      deadHorses={deadHorses}
+                      goalScore={goalScore}
+                      dice1={dice1}
+                      dice2={dice2}
+                      rollDice={handleRollDice}/>
+      <Controls />
 
 
 

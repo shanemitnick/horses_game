@@ -6,7 +6,7 @@ export default function MoneyTable(props){
 
   let columns = Object.keys(props.moneyView).map((horse) => {
     return(
-      <Col key={horse}>
+      <Col key={horse} className="bg-success mt-2">
         {horse} owes: {props.moneyView[horse]} chips
       </Col>
     )
