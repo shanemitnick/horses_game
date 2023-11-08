@@ -6,7 +6,7 @@ import DiceDisplay from "./diceDisplay";
 export default function BoardContainer(props){
 
     return (
-        <Container className="d-flex flex-row border border-primary">
+        <div className="d-flex flex-row m-5">
             <BoardTiles goalScore={props.goalScore}
                         currentGame={props.currentGame}
                         winningHorse={props.winningHorse}
@@ -14,6 +14,6 @@ export default function BoardContainer(props){
             <DiceDisplay dice1={props.dice1}
                          dice2={props.dice2}
                          rollDice={props.rollDice}/>
-        </Container>
+        </div>
     )
 }

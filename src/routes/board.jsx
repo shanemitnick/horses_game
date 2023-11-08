@@ -117,7 +117,7 @@ export default function Board(){
   }
 
   return(
-    <div>
+    <div className="bg-dark" style={{height: "100vh"}}>
       {gameOver ? 
          <GameOverModal show={gameOver} 
                         closeModal={() => setGameOver(false)}
@@ -157,6 +157,7 @@ export default function Board(){
                       dice2={dice2}
                       rollDice={handleRollDice}/>
       <Controls />
+
 
 
 
